@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPT Calculator with Path</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 60px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>OPT Calculator for a 5x5 Grid</h2>
+
+<!-- Matriz de entrada -->
+<table id="inputTable">
+    <tr>
+        <td><input type="number" id="cell-0-0" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-0-1" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-0-2" placeholder="0" value="-999"></td>
+        <td><input type="number" id="cell-0-3" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-0-4" placeholder="0" value="0"></td>
+    </tr>
+    <tr>
+        <td><input type="number" id="cell-1-0" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-1-1" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-1-2" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-1-3" placeholder="0" value="-999"></td>
+        <td><input type="number" id="cell-1-4" placeholder="0" value="1"></td>
+    </tr>
+    <tr>
+        <td><input type="number" id="cell-2-0" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-2-1" placeholder="0" value="-999"></td>
+        <td><input type="number" id="cell-2-2" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-2-3" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-2-4" placeholder="0" value="0"></td>
+    </tr>
+    <tr>
+        <td><input type="number" id="cell-3-0" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-3-1" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-3-2" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-3-3" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-3-4" placeholder="0" value="-999"></td>
+    </tr>
+    <tr>
+        <td><input type="number" id="cell-4-0" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-4-1" placeholder="0" value="0"></td>
+        <td><input type="number" id="cell-4-2" placeholder="0" value="-999"></td>
+        <td><input type="number" id="cell-4-3" placeholder="0" value="1"></td>
+        <td><input type="number" id="cell-4-4" placeholder="0" value="1"></td>
+    </tr>
+</table>
+
+<button onclick="calculateOPT()">Calculate OPT and Path</button>
+
+<!-- Matriz de salida OPT -->
+<h3>OPT Results</h3>
+<table id="resultTable">
+    <tr>
+        <td id="opt-0-0"></td>
+        <td id="opt-0-1"></td>
+        <td id="opt-0-2"></td>
+        <td id="opt-0-3"></td>
+        <td id="opt-0-4"></td>
+    </tr>
+    <tr>
+        <td id="opt-1-0"></td>
+        <td id="opt-1-1"></td>
+        <td id="opt-1-2"></td>
+        <td id="opt-1-3"></td>
+        <td id="opt-1-4"></td>
+    </tr>
+    <tr>
+        <td id="opt-2-0"></td>
+        <td id="opt-2-1"></td>
+        <td id="opt-2-2"></td>
+        <td id="opt-2-3"></td>
+        <td id="opt-2-4"></td>
+    </tr>
+    <tr>
+        <td id="opt-3-0"></td>
+        <td id="opt-3-1"></td>
+        <td id="opt-3-2"></td>
+        <td id="opt-3-3"></td>
+        <td id="opt-3-4"></td>
+    </tr>
+    <tr>
+        <td id="opt-4-0"></td>
+        <td id="opt-4-1"></td>
+        <td id="opt-4-2"></td>
+        <td id="opt-4-3"></td>
+        <td id="opt-4-4"></td>
+    </tr>
+</table>
+
+<!-- Recorrido de ida y vuelta -->
+<h3>Recorrido de Ida y Vuelta</h3>
+<p><strong>Recorrido de Ida:</strong> <span id="idaPath"></span></p>
+<p><strong>Recorrido de Vuelta:</strong> <span id="vueltaPath"></span></p>
+
+<script>
+    // Function to calculate OPT values and find the optimal path
+   // Function to calculate OPT values and find the optimal path
+function calculateOPT() {
+    const n = 5;
+    let C = [];
+    let OPT = [];
+    let idaPath = [];
+    let vueltaPath = [];
+
+    // Initialize the C matrix and OPT matrix
+    for (let i = 0; i < n; i++) {
+        C[i] = [];
+        OPT[i] = [];
+        for (let j = 0; j < n; j++) {
+            let cellValue = parseInt(document.getElementById(`cell-${i}-${j}`).value);
+            C[i][j] = cellValue === -999 ? -Infinity : cellValue;  // -999 is used to represent -Infinity
+            OPT[i][j] = -Infinity;  // Initialize OPT with -Infinity
+        }
+    }
+
+    // Base case for OPT (start at the bottom-right corner)
+    OPT[n - 1][n - 1] = C[n - 1][n - 1]; // Set OPT[n][n]
+
+    // Fill the OPT matrix from bottom-right to top-left
+    for (let f = n - 1; f >= 0; f--) {
+        for (let c = n - 1; c >= 0; c--) {
+            if (C[f][c] !== -Infinity) { // Skip prohibited cells
+                if (f < n - 1) OPT[f][c] = Math.max(OPT[f][c], OPT[f + 1][c] + C[f][c]);
+                if (c < n - 1) OPT[f][c] = Math.max(OPT[f][c], OPT[f][c + 1] + C[f][c]);
+            }
+        }
+    }
+
+    // If OPT[0][0] is -Infinity, there's no possible path
+    if (OPT[0][0] === -Infinity) {
+        document.getElementById("idaPath").innerText = "No existe un camino posible.";
+        document.getElementById("vueltaPath").innerText = "No existe un camino posible.";
+        return;
+    }
+
+    // Display the OPT results in the table
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            document.getElementById(`opt-${i}-${j}`).innerText = (OPT[i][j] === -Infinity) ? "-∞" : OPT[i][j];
+        }
+    }
+
+    // Calculate the path for Ida (1,1) -> (5,5)
+    let f = 0, c = 0;
+    idaPath.push(`(${f + 1}, ${c + 1})`);
+    while (f < n - 1 || c < n - 1) {
+        if (f < n - 1 && OPT[f + 1][c] >= OPT[f][c + 1]) {
+            f++;
+        } else if (c < n - 1) {
+            c++;
+        }
+        idaPath.push(`(${f + 1}, ${c + 1})`);
+    }
+
+    // Calculate the path for Vuelta (5,5) -> (1,1)
+    f = n - 1;
+    c = n - 1;
+    vueltaPath.push(`(${f + 1}, ${c + 1})`);
+    while (f > 0 || c > 0) {
+        if (f > 0 && OPT[f - 1][c] >= OPT[f][c - 1]) {
+            f--;
+        } else if (c > 0) {
+            c--;
+        }
+        vueltaPath.push(`(${f + 1}, ${c + 1})`);
+    }
+
+    // Display the paths
+    document.getElementById("idaPath").innerText = idaPath.join(" -> ");
+    document.getElementById("vueltaPath").innerText = vueltaPath.join(" -> ");
+}
+
+    
+</script>
+
+</body>
+</html>
